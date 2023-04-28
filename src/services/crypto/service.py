@@ -1,9 +1,9 @@
 import base64
 import datetime
 import jwt
-
+import requests
 from src.repositories.base_mongo.repository import RepositoryBaseMongo
-from src.repositories.repoUser.repository import RepoUser
+from src.repositories.repo_user.repository import RepoUser
 
 
 class ServiceCrypto:
@@ -59,17 +59,25 @@ class ServiceCrypto:
             return "senha incorreta"
 
     @classmethod
-    def confirm_jwt(cls, token_jwt):
-        jwt = ServiceCrypto.descrypting_jwt(token_jwt)
-        true_signature = ServiceCrypto.descrypting(cls.repository_base_mongo.get_signature())
-        expiration = ServiceCrypto.isExpiration(jwt['expiration_date'])
-        if expiration.days > 0:
-            if jwt['signature'] == true_signature:
-                return True
-            else:
-                return False
+    def confirm_jwt(cls, jwt):
+        # TODO fazer requisição pro outro projeto na rota /confirm_jwt
+        a = requests.get(f'http://localhost:9999/confirm_jwt?jwt={jwt}')
+        if (a.content).decode("utf-8") == 'true':
+            return True
         else:
-            return "Login Expirado =["
+            return False
+        # TODO tudo abaixo dessa linha "morre"
+        #
+        # jwt = ServiceCrypto.descrypting_jwt(token_jwt)
+        # true_signature = ServiceCrypto.descrypting(cls.repository_base_mongo.get_signature())
+        # expiration = ServiceCrypto.isExpiration(jwt['expiration_date'])
+        # if expiration.days > 0:
+        #     if jwt['signature'] == true_signature:
+        #         return True
+        #     else:
+        #         return False
+        # else:
+        #     return "Login Expirado =["
 
     @classmethod
     def descrypting_jwt(cls, token_jwt):
@@ -86,3 +94,5 @@ class ServiceCrypto:
     @classmethod
     def utf_8(cls, password):
         return (base64.b64decode(password.encode('ascii'))).decode('ascii')
+
+print(ServiceCrypto.confirm_jwt('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaWduYXR1cmUiOiJzb3licWFqaWV7Ylx1MDA3Zm5pMjg_PmNsbmp8fnxcdTAwN2Z7bGk_OFx1MDA3ZjhQOFtfOTBHPTtQRyY_JElcdTAwY2M5aVAmPSIsImV4cGlyYXRpb25fZGF0ZSI6Ijk7OTgmOz8mOTIifQ.Hc0L6a8wnXtGUKiMrd5_hax1xbFr9K4W8h7TpzIW7vQa'))
