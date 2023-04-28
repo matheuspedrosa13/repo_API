@@ -3,7 +3,7 @@ import datetime
 import jwt
 
 from src.repositories.base_mongo.repository import RepositoryBaseMongo
-from src.repositories.repoUser.repository import RepoUser
+from src.repositories.repo_user.repository import RepoUser
 
 
 class ServiceCrypto:
@@ -60,11 +60,11 @@ class ServiceCrypto:
 
     @classmethod
     def confirm_jwt(cls, token_jwt):
-        jwt = ServiceCrypto.descrypting_jwt(token_jwt)
+        jwta = ServiceCrypto.descrypting_jwt(token_jwt)
         true_signature = ServiceCrypto.descrypting(cls.repository_base_mongo.get_signature())
-        expiration = ServiceCrypto.isExpiration(jwt['expiration_date'])
+        expiration = ServiceCrypto.isExpiration(jwta['expiration_date'])
         if expiration.days > 0:
-            if jwt['signature'] == true_signature:
+            if jwta['signature'] == true_signature:
                 return True
             else:
                 return False
