@@ -17,7 +17,8 @@ class ServiceTrainers:
                 "name": name,
                 "email": email,
                 "password": password_encrypto,
-                "genre": gender
+                "genre": gender,
+                "adm": False
             }
 
             result = cls.repository_register.sign_trainer(new_user)

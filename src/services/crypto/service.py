@@ -59,10 +59,20 @@ class ServiceCrypto:
             return "senha incorreta"
 
     @classmethod
+    def create_jwt2(cls):
+        stuff = {
+            "signature": cls.encrypting(
+                cls.repository_base_mongo.get_signature()),
+        }
+        return jwt.encode(stuff, key=cls.repository_base_mongo.get_jwt_key2(), algorithm="HS256")
+
+    @classmethod
     def confirm_jwt(cls, jwt):
         # TODO fazer requisição pro outro projeto na rota /confirm_jwt
-        a = requests.get(f'http://localhost:9999/confirm_jwt?jwt={jwt}')
+        a = requests.get(f'http://localhost:9999/confirm_jwt_user?jwt={jwt}')
         if (a.content).decode("utf-8") == 'true':
+            print((a))
+
             return True
         else:
             return False
@@ -95,4 +105,5 @@ class ServiceCrypto:
     def utf_8(cls, password):
         return (base64.b64decode(password.encode('ascii'))).decode('ascii')
 
-print(ServiceCrypto.confirm_jwt('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaWduYXR1cmUiOiJzb3licWFqaWV7Ylx1MDA3Zm5pMjg_PmNsbmp8fnxcdTAwN2Z7bGk_OFx1MDA3ZjhQOFtfOTBHPTtQRyY_JElcdTAwY2M5aVAmPSIsImV4cGlyYXRpb25fZGF0ZSI6Ijk7OTgmOz8mOTIifQ.Hc0L6a8wnXtGUKiMrd5_hax1xbFr9K4W8h7TpzIW7vQa'))
+print(ServiceCrypto.confirm_jwt('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaWduYXR1cmUiOiJzb3licWFqaWV7Ylx1MDA3Zm5pMjg_PmNsbmp8fnxcdTAwN2Z7bGk_OFx1MDA3ZjhQOFtfOTBHPTtQRyY_JElcdTAwY2M5aVAmPSIsImV4cGlyYXRpb25fZGF0ZSI6Ijk7OTgmOz4mOzgifQ.HUbPqWwArLxkHHXEeLEhVkgoLpl4dLaY9PBFeJpZQT4'))
+print(ServiceCrypto.create_jwt2())

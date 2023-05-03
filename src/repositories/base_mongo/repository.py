@@ -21,3 +21,7 @@ class RepositoryBaseMongo:
 
     def get_jwt_key(self):
         return self.x['jwt']
+
+    def get_jwt_key2(self):
+        return self.x['jwtAdm']
+
