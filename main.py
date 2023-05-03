@@ -6,61 +6,50 @@ from jwt import InvalidSignatureError
 from starlette.requests import Request
 from src.services.crypto.service import ServiceCrypto
 from starlette.responses import PlainTextResponse
+
 # Project
 from src.services.router.service import Router
+from src.routes.route_users.route import router as users_router
+from src.routes.route_api.route import router as api_router
+from src.routes.route_catch.route import router as catch_router
 
-from src.routes.route_users.route import router
-from src.routes.route_api.route import router
-from src.routes.route_catch.route import router
-
-# from src.routes.batalha.route import router
-
+# Create instance of ServiceCrypto
 instance_service_crypto = ServiceCrypto()
 
+# Create FastAPI app instance
 app = FastAPI(title='pokemon')
 
+# Include routers
 app.include_router(Router.get_router())
+app.include_router(users_router)
+app.include_router(api_router)
+app.include_router(catch_router)
 
+# Middleware to intercept incoming requests
 @app.middleware("http")
-async def inteceptacao(request, call_next):
-    test_json = request.url
-    test_json2 = str(test_json)
-    test_json3 = test_json2.find("/docs")
-    test_openapi = test_json2.find("/openapi.json")
-
-    if test_json3 != -1 or test_openapi != -1:
+async def inteceptacao(request: Request, call_next):
+    # Check if requested route is /docs or /openapi.json
+    if "/docs" in request.url.path or "/openapi.json" in request.url.path:
         response = await call_next(request)
         return response
 
-    test = request.headers
-    test3 = test.values()
-    test4 = test.keys()
-    try:
-        posicao = list(test4).index("token-jwt")
-    except:
-        return PlainTextResponse("Senha incorreta ou falta token")
+    # Retrieve JWT from request headers
+    jwt = request.headers.get("token-jwt")
 
-    jwt = test3[posicao]
-
-    print(posicao)
-
-    print(
-        'Interceptou chegada...'
-    )
-    if instance_service_crypto.confirm_jwt(jwt) == True:
-        print(
-            'Interceptou volta'
-        )
-        str(jwt)
-
-        response = await call_next(request)
-        print(jwt)
-        print(response)
-        return response
-    else:
+    # Check if JWT is missing or invalid
+    if not jwt or not instance_service_crypto.confirm_jwt(jwt):
         return PlainTextResponse("Não tem permissão")
 
+    rota = str(request.url.path)
+    print(rota[1:])
+    # Print requested route
+    print(f"Requested route: {request.url.path}")
 
+    # Call next middleware or route handler
+    response = await call_next(request)
+    return response
+
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -68,6 +57,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Run app with Uvicorn
 if __name__ == "__main__":
     port = 8888
     uvicorn.run(
